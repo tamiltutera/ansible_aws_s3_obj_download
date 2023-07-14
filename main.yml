@@ -1,0 +1,45 @@
+---
+- name: Manage S3 Bucket Objects
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - secrets.yml
+  vars:
+    bucket_name: "my-tamiltutera-s3-bucket"
+    region: "us-east-1"
+    local_file_path: "~/ansible_aws_s3_obj_download/secrets.yml"
+    s3_object_key: "vault.yml"
+
+  tasks:
+    - name: Upload Object to S3 Bucket      
+      amazon.aws.aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: "{{ s3_object_key }}"
+        src: "{{ local_file_path }}"
+        mode: put
+        region: "{{ region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+
+    - name: Download Object from S3 Bucket
+      become: yes
+      become_user: root
+      amazon.aws.aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: "{{ s3_object_key }}"
+        dest: "~/ansible_aws_s3_obj_download/keys.yml"
+        mode: get
+        region: "{{ region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+
+    - name: Delete Object from S3 Bucket
+      become: yes
+      become_user: root
+      amazon.aws.aws_s3:
+        bucket: "{{ bucket_name }}"
+        object: "{{ s3_object_key }}"
+        mode: delobj
+        region: "{{ region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
